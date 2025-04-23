@@ -1,0 +1,107 @@
+// // app/dashboard/Dashboard.js
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import Tile from '../components/Tile';
+import Card from '../components/Card';
+import { useNavigation } from '@react-navigation/native';
+import { supabase } from '../../utils/supabaseClient';
+
+export default function Dashboard() {
+  const navigation = useNavigation();
+  const [fullName, setFullName] = useState('');
+
+  useEffect(() => {
+    const fetchFullName = async () => {
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+
+      if (sessionError) {
+        console.error('Session error:', sessionError.message);
+        return;
+      }
+
+      const userId = session?.user?.id; // This is the Auth UID
+      console.log('Auth UID:', userId);
+
+      if (userId) {
+        const { data, error } = await supabase
+          .from('patients')
+          .select('full_name')
+          .eq('user_id', userId)
+          .maybeSingle();
+
+        if (error) {
+          console.error('Error fetching full_name:', error.message);
+        } else if (!data) {
+          console.warn('No matching patient found for UID:', userId);
+        } else {
+          console.log('Patient data:', data);
+          setFullName(data.full_name);
+        }
+      }
+    };
+
+    fetchFullName();
+  }, []);
+
+  return (
+    <ScrollView style={styles.container}>
+      <Text style={styles.welcome}>👋 Welcome, {fullName || 'SmartCare User'}!</Text>
+
+      <Card title="Upcoming Appointments">
+        No appointments scheduled. Book one today!
+      </Card>
+
+      <View style={styles.row}>
+        <Tile
+          icon="medical-services"
+          color="#007bff"
+          text="Book Appointment"
+          onPress={() => navigation.navigate('BookAppointment')}
+        />
+        <Tile
+          icon="description"
+          color="#28a745"
+          text="View Prescriptions"
+          onPress={() => navigation.navigate('ViewPrescriptions')}
+        />
+      </View>
+
+      <View style={styles.row}>
+        <Tile
+          icon="health-and-safety"
+          color="#dc3545"
+          text="Health History"
+          onPress={() => navigation.navigate('HealthHistory')}
+        />
+        <Tile
+          icon="person"
+          color="#ffc107"
+          text="Profile"
+          onPress={() => navigation.navigate('UserProfile')}
+        />
+      </View>
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: '#f7f9fc',
+    padding: 20,
+    marginTop: 30,
+  },
+  welcome: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    color: '#333',
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 15,
+  },
+});
