@@ -1,9 +1,12 @@
-// app/appointment/BookAppointment.js
+// // app/appointment/BookAppointment.js
+
+
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, Platform } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { supabase } from '../../utils/supabaseClient';
 import { useNavigation } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons'; // 👈 Import Ionicons
 
 export default function BookAppointment() {
     const navigation = useNavigation();
@@ -38,7 +41,13 @@ export default function BookAppointment() {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>📅 Book an Appointment</Text>
+            {/* 👇 Title row with back button and text */}
+            <View style={styles.titleRow}>
+                <TouchableOpacity onPress={() => navigation.goBack()}>
+                    <Ionicons name="arrow-back" size={24} color="#007bff" />
+                </TouchableOpacity>
+                <Text style={styles.title}>📅 Book an Appointment</Text>
+            </View>
 
             <Text style={styles.label}>Select Date:</Text>
             <TouchableOpacity onPress={() => setShowPicker(true)} style={styles.dateButton}>
@@ -51,9 +60,10 @@ export default function BookAppointment() {
                     mode="date"
                     display={Platform.OS === 'ios' ? 'spinner' : 'default'}
                     onChange={(event, selectedDate) => {
-                    if (Platform.OS === 'android') setShowPicker(false);
-                    if (selectedDate) setDate(selectedDate);
+                        if (Platform.OS === 'android') setShowPicker(false);
+                        if (selectedDate) setDate(selectedDate);
                     }}
+                    minimumDate={new Date()} // 👈 This restricts past dates
                 />
             )}
 
@@ -79,11 +89,16 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         flex: 1,
     },
+    titleRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 25,
+        marginTop: 30,
+    },
     title: {
         fontSize: 22,
         fontWeight: 'bold',
-        marginBottom: 25,
-        marginTop: 30,
+        marginLeft: 10,
     },
     label: {
         fontWeight: '600',
