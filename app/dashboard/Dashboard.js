@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: '#f7f9fc',
     padding: 20,
-    marginTop: 40,
+    marginTop: 50,
     flex: 1,
   },
   welcome: {
