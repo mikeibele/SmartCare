@@ -1,15 +1,108 @@
-// import React from 'react';
-// import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity } from 'react-native';
+// import React, { useEffect, useState } from 'react';
+// import {
+//   View,
+//   Text,
+//   StyleSheet,
+//   Image,
+//   ScrollView,
+//   TouchableOpacity,
+//   TextInput,
+//   Alert,
+// } from 'react-native';
+// import { supabase } from '../../utils/supabaseClient';
+// import { Ionicons } from '@expo/vector-icons'; // for the back arrow
 
 // const UserProfile = ({ navigation }) => {
+//   const [name, setName] = useState('');
+//   const [originalName, setOriginalName] = useState('');
+//   const [isEditing, setIsEditing] = useState(false);
+
+//   useEffect(() => {
+//     const fetchUserProfile = async () => {
+//       const {
+//         data: { session },
+//         error: sessionError,
+//       } = await supabase.auth.getSession();
+
+//       if (sessionError) {
+//         console.error('Error fetching session:', sessionError.message);
+//         return;
+//       }
+
+//       const userId = session?.user?.id;
+
+//       if (userId) {
+//         const { data, error } = await supabase
+//           .from('patients')
+//           .select('full_name')
+//           .eq('user_id', userId)
+//           .maybeSingle();
+
+//         if (error) {
+//           console.error('Error fetching patient data:', error.message);
+//         } else if (data) {
+//           setName(data.full_name);
+//           setOriginalName(data.full_name);
+//         }
+//       }
+//     };
+
+//     fetchUserProfile();
+//   }, []);
+
+//   const handleNameChange = (text) => {
+//     setName(text);
+//     setIsEditing(text !== originalName);
+//   };
+
+//   const handleSave = async () => {
+//     const {
+//       data: { session },
+//     } = await supabase.auth.getSession();
+
+//     const userId = session?.user?.id;
+
+//     if (!userId) return;
+
+//     const { error } = await supabase
+//       .from('patients')
+//       .update({ full_name: name })
+//       .eq('user_id', userId);
+
+//     if (error) {
+//       Alert.alert('Error', 'Failed to update name.');
+//       console.error(error.message);
+//     } else {
+//       setOriginalName(name);
+//       setIsEditing(false);
+//       Alert.alert('Success', 'Name updated successfully!');
+//     }
+//   };
+
 //   return (
 //     <ScrollView style={styles.container}>
+//       {/* 🔙 Back Button */}
+//       <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+//         <Ionicons name="arrow-back" size={24} color="#fff" />
+//       </TouchableOpacity>
+
 //       <View style={styles.profileSection}>
 //         <Image
-//           source={require('../../assets/images/UserProfile.png')} // Replace with your image path
+//           source={require('../../assets/images/UserProfile.png')}
 //           style={styles.profileImage}
 //         />
-//         <Text style={styles.profileName}>Akporhiegbe Mudiaga</Text>
+//         <TextInput
+//           style={styles.profileNameInput}
+//           value={name}
+//           onChangeText={handleNameChange}
+//           placeholder="Enter your name"
+//           placeholderTextColor="#888"
+//         />
+//         {isEditing && (
+//           <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+//             <Text style={styles.saveButtonText}>Save</Text>
+//           </TouchableOpacity>
+//         )}
 //       </View>
 
 //       <View style={styles.section}>
@@ -54,6 +147,13 @@
 //     flex: 1,
 //     backgroundColor: '#121212',
 //     paddingHorizontal: 20,
+//     paddingTop: 50,
+//   },
+//   backButton: {
+//     position: 'absolute',
+//     top: 40,
+//     left: 20,
+//     zIndex: 1,
 //   },
 //   profileSection: {
 //     alignItems: 'center',
@@ -64,11 +164,28 @@
 //     height: 90,
 //     borderRadius: 45,
 //   },
-//   profileName: {
+//   profileNameInput: {
 //     fontSize: 22,
 //     fontWeight: 'bold',
 //     color: '#fff',
 //     marginTop: 10,
+//     textAlign: 'center',
+//     borderBottomColor: '#2e90fa',
+//     borderBottomWidth: 1,
+//     paddingVertical: 4,
+//     width: '80%',
+//   },
+//   saveButton: {
+//     backgroundColor: '#2e90fa',
+//     paddingVertical: 10,
+//     paddingHorizontal: 20,
+//     borderRadius: 8,
+//     marginTop: 10,
+//   },
+//   saveButtonText: {
+//     color: '#fff',
+//     fontSize: 16,
+//     fontWeight: '600',
 //   },
 //   section: {
 //     marginBottom: 30,
@@ -111,8 +228,7 @@
 
 // export default UserProfile;
 
-
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -120,52 +236,73 @@ import {
   Image,
   ScrollView,
   TouchableOpacity,
-  TextInput,
   Alert,
 } from 'react-native';
+import { supabase } from '../../utils/supabaseClient';
+import { Ionicons } from '@expo/vector-icons';
 
 const UserProfile = ({ navigation }) => {
-  const [name, setName] = useState('Akporhiegbe Mudiaga');
-  const [originalName, setOriginalName] = useState('Akporhiegbe Mudiaga');
-  const [isEditing, setIsEditing] = useState(false);
+  const [fullName, setFullName] = useState('');
+  const [userId, setUserId] = useState('');
 
-  const handleNameChange = (text) => {
-    setName(text);
-    setIsEditing(text !== originalName);
-  };
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
 
-  const handleSave = () => {
-    setOriginalName(name);
-    setIsEditing(false);
-    Alert.alert('Success', 'Name updated successfully!');
-    // 🔄 Optional: You can update this value to Supabase here.
-  };
+      if (sessionError) {
+        console.error('Session Error:', sessionError.message);
+        return;
+      }
+
+      const uid = session?.user?.id;
+      setUserId(uid);
+
+      if (uid) {
+        const { data, error } = await supabase
+          .from('patients')
+          .select('full_name')
+          .eq('user_id', uid)
+          .maybeSingle();
+
+        if (error) {
+          console.error('Error fetching patient data:', error.message);
+        } else if (data) {
+          setFullName(data.full_name);
+        }
+      }
+    };
+
+    fetchUserProfile();
+  }, []);
 
   return (
     <ScrollView style={styles.container}>
+      {/* 🔙 Back Button */}
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <Ionicons name="arrow-back" size={24} color="#fff" />
+      </TouchableOpacity>
+
       <View style={styles.profileSection}>
         <Image
           source={require('../../assets/images/UserProfile.png')}
           style={styles.profileImage}
         />
-        <TextInput
-          style={styles.profileNameInput}
-          value={name}
-          onChangeText={handleNameChange}
-          placeholder="Enter your name"
-          placeholderTextColor="#888"
-        />
-        {isEditing && (
-          <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-            <Text style={styles.saveButtonText}>Save</Text>
-          </TouchableOpacity>
-        )}
+        <Text style={styles.profileName}>{fullName || 'Loading name...'}</Text>
       </View>
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Health</Text>
-        <Option text="Health Details" />
-        <Option text="Medical ID" />
+        <Option
+          text="Health Details"
+          onPress={() => navigation.navigate('HealthDetails')}
+        />
+        <Option
+          text="Medical ID"
+          onPress={() => navigation.navigate('MyId', { user_id: userId })}
+        />
       </View>
 
       <View style={styles.section}>
@@ -193,8 +330,8 @@ const UserProfile = ({ navigation }) => {
   );
 };
 
-const Option = ({ text }) => (
-  <TouchableOpacity style={styles.option}>
+const Option = ({ text, onPress }) => (
+  <TouchableOpacity style={styles.option} onPress={onPress}>
     <Text style={styles.optionText}>{text}</Text>
   </TouchableOpacity>
 );
@@ -204,6 +341,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#121212',
     paddingHorizontal: 20,
+    paddingTop: 50,
+  },
+  backButton: {
+    position: 'absolute',
+    top: 40,
+    left: 20,
+    zIndex: 1,
   },
   profileSection: {
     alignItems: 'center',
@@ -214,28 +358,11 @@ const styles = StyleSheet.create({
     height: 90,
     borderRadius: 45,
   },
-  profileNameInput: {
+  profileName: {
     fontSize: 22,
     fontWeight: 'bold',
     color: '#fff',
     marginTop: 10,
-    textAlign: 'center',
-    borderBottomColor: '#2e90fa',
-    borderBottomWidth: 1,
-    paddingVertical: 4,
-    width: '80%',
-  },
-  saveButton: {
-    backgroundColor: '#2e90fa',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    marginTop: 10,
-  },
-  saveButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
   },
   section: {
     marginBottom: 30,

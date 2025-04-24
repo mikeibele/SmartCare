@@ -1,56 +1,75 @@
 // app/dashboard/Dashboard.js
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  ActivityIndicator,
+  Alert,
+  TouchableOpacity,
+} from 'react-native';
 import Tile from '../components/Tile';
 import Card from '../components/Card';
+import { AntDesign } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { supabase } from '../../utils/supabaseClient';
 
 export default function Dashboard() {
   const navigation = useNavigation();
   const [fullName, setFullName] = useState('');
+  const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchFullName = async () => {
+    const fetchUserData = async () => {
       try {
         const {
           data: { session },
           error: sessionError,
         } = await supabase.auth.getSession();
 
-        if (sessionError) {
-          throw sessionError;
-        }
+        if (sessionError) throw sessionError;
 
         const userId = session?.user?.id;
         console.log('Auth UID:', userId);
 
-        const { data, error } = await supabase
+        const { data: patientData, error: patientError } = await supabase
           .from('patients')
           .select('full_name')
           .eq('user_id', userId)
           .maybeSingle();
 
-        if (error) {
-          throw error;
+        if (patientError) throw patientError;
+        if (patientData) {
+          setFullName(patientData.full_name);
         }
 
-        if (data) {
-          console.log('Patient data:', data);
-          setFullName(data.full_name);
-        } else {
-          console.warn('No matching patient found for UID:', userId);
-        }
+        // const { data: appointmentData, error: appointmentError } = await supabase
+        //   .from('appointments')
+        //   .select('*')
+        //   .eq('user_id', userId)
+        //   .order('appointment_date', { ascending: true });
+
+        const { data: appointmentData, error: appointmentError } = await supabase
+        .from('appointments')
+        .select('*')
+        .eq('user_id', userId)
+        .order('appointment_date', { ascending: false }) // latest first
+        .limit(1); // only get the latest
+      
+        if (appointmentError) throw appointmentError;
+
+        setAppointments(appointmentData || []);
       } catch (err) {
-        console.error('Error fetching user data:', err.message);
-        Alert.alert('Error', 'Failed to load your details.');
+        console.error('Error:', err.message);
+        Alert.alert('Error', 'Failed to load your data.');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchFullName();
+    fetchUserData();
   }, []);
 
   if (loading) {
@@ -66,7 +85,30 @@ export default function Dashboard() {
       <Text style={styles.welcome}>👋 Welcome, {fullName || 'SmartCare User'}!</Text>
 
       <Card title="Upcoming Appointments">
-        No appointments scheduled. Book one today!
+        {appointments.length === 0 ? (
+          <Text style={{ color: '#555' }}>No appointments scheduled. Book one today!</Text>
+        ) : (
+          appointments.map((appt) => (
+            <TouchableOpacity
+              key={appt.id}
+              style={styles.appointmentItem}
+              onPress={() => navigation.navigate('AppointmentList', { appointment: appt })}
+            >
+              <View style={styles.appointmentContent}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.apptDate}>
+                    {new Date(appt.appointment_date).toLocaleString()}
+                  </Text>
+                  <Text style={styles.apptStatus}>Status: {appt.status}</Text>
+                  {appt.symptoms && (
+                    <Text style={styles.apptSymptoms}>Symptoms: {appt.symptoms}</Text>
+                  )}
+                </View>
+                <AntDesign name="arrowright" size={24} color="black" />
+              </View>
+            </TouchableOpacity>
+          ))
+        )}
       </Card>
 
       <View style={styles.row}>
@@ -110,7 +152,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   welcome: {
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 20,
     color: '#333',
@@ -119,5 +161,35 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 15,
+  },
+  appointmentItem: {
+    width: '100%', // Full width
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 20, // Increased padding
+    marginVertical: 10,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+    elevation: 3,
+  },
+  
+  appointmentContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  apptDate: {
+    fontWeight: 'bold',
+    color: '#333',
+    fontSize: 16,
+  },
+  apptStatus: {
+    marginTop: 4,
+    color: '#555',
+  },
+  apptSymptoms: {
+    marginTop: 4,
+    fontStyle: 'italic',
+    color: '#777',
   },
 });

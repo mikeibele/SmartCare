@@ -9,6 +9,10 @@ import { ActivityIndicator, View } from 'react-native';
 import { useAuthContext } from '../app/context/AuthProvider';
 import BookAppointment from '../app/appointments/BookAppointment';
 import UserProfile from '../app/profile/UserProfile';
+import MyId from '../app/profile/MyId';
+import HealthDetails from '../app/profile/HealthDetails';
+import AppointmentList from '../app/appointments/AppointmentList';
+
 
 const Stack = createNativeStackNavigator();
 
@@ -31,6 +35,9 @@ export default function MainNavigator() {
             <Stack.Screen name="Dashboard" component={DashboardScreen} />
             <Stack.Screen name="BookAppointment" component={BookAppointment} options={{ title: 'Book Appointment' }} />
             <Stack.Screen name="UserProfile" component={UserProfile} />
+            <Stack.Screen name="HealthDetails" component={HealthDetails} />
+            <Stack.Screen name="MyId" component={MyId} />
+            <Stack.Screen name="AppointmentList" component={AppointmentList} />
           </>
         ) : (
           <>
