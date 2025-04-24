@@ -1,6 +1,6 @@
-// // app/dashboard/Dashboard.js
+// app/dashboard/Dashboard.js
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import Tile from '../components/Tile';
 import Card from '../components/Card';
 import { useNavigation } from '@react-navigation/native';
@@ -9,23 +9,23 @@ import { supabase } from '../../utils/supabaseClient';
 export default function Dashboard() {
   const navigation = useNavigation();
   const [fullName, setFullName] = useState('');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchFullName = async () => {
-      const {
-        data: { session },
-        error: sessionError,
-      } = await supabase.auth.getSession();
+      try {
+        const {
+          data: { session },
+          error: sessionError,
+        } = await supabase.auth.getSession();
 
-      if (sessionError) {
-        console.error('Session error:', sessionError.message);
-        return;
-      }
+        if (sessionError) {
+          throw sessionError;
+        }
 
-      const userId = session?.user?.id; // This is the Auth UID
-      console.log('Auth UID:', userId);
+        const userId = session?.user?.id;
+        console.log('Auth UID:', userId);
 
-      if (userId) {
         const { data, error } = await supabase
           .from('patients')
           .select('full_name')
@@ -33,18 +33,33 @@ export default function Dashboard() {
           .maybeSingle();
 
         if (error) {
-          console.error('Error fetching full_name:', error.message);
-        } else if (!data) {
-          console.warn('No matching patient found for UID:', userId);
-        } else {
+          throw error;
+        }
+
+        if (data) {
           console.log('Patient data:', data);
           setFullName(data.full_name);
+        } else {
+          console.warn('No matching patient found for UID:', userId);
         }
+      } catch (err) {
+        console.error('Error fetching user data:', err.message);
+        Alert.alert('Error', 'Failed to load your details.');
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchFullName();
   }, []);
+
+  if (loading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color="#007bff" />
+      </View>
+    );
+  }
 
   return (
     <ScrollView style={styles.container}>
@@ -92,6 +107,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f7f9fc',
     padding: 20,
     marginTop: 30,
+    flex: 1,
   },
   welcome: {
     fontSize: 22,

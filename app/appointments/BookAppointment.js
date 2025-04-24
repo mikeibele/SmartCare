@@ -1,6 +1,4 @@
-// // app/appointment/BookAppointment.js
-
-
+// app/appointment/BookAppointment.js
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, Platform } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';

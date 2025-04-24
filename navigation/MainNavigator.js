@@ -8,6 +8,7 @@ import DashboardScreen from '../app/dashboard/Dashboard';
 import { ActivityIndicator, View } from 'react-native';
 import { useAuthContext } from '../app/context/AuthProvider';
 import BookAppointment from '../app/appointments/BookAppointment';
+import UserProfile from '../app/profile/UserProfile';
 
 const Stack = createNativeStackNavigator();
 
@@ -16,8 +17,8 @@ export default function MainNavigator() {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color="#FFC107" />
+      <View style={{ backgroundColor: '#06191D', flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#00ffcc" />
       </View>
     );
   }
@@ -29,6 +30,7 @@ export default function MainNavigator() {
           <>
             <Stack.Screen name="Dashboard" component={DashboardScreen} />
             <Stack.Screen name="BookAppointment" component={BookAppointment} options={{ title: 'Book Appointment' }} />
+            <Stack.Screen name="UserProfile" component={UserProfile} />
           </>
         ) : (
           <>
