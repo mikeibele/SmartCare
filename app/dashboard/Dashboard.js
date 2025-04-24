@@ -14,6 +14,7 @@ import Card from '../components/Card';
 import { AntDesign } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { supabase } from '../../utils/supabaseClient';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Dashboard() {
   const navigation = useNavigation();
@@ -21,6 +22,12 @@ export default function Dashboard() {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    await AsyncStorage.removeItem('user_session');
+    navigation.replace('Login'); // or navigate to the login screen
+  };
+  
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -44,12 +51,6 @@ export default function Dashboard() {
         if (patientData) {
           setFullName(patientData.full_name);
         }
-
-        // const { data: appointmentData, error: appointmentError } = await supabase
-        //   .from('appointments')
-        //   .select('*')
-        //   .eq('user_id', userId)
-        //   .order('appointment_date', { ascending: true });
 
         const { data: appointmentData, error: appointmentError } = await supabase
         .from('appointments')
@@ -82,7 +83,14 @@ export default function Dashboard() {
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.welcome}>👋 Welcome, {fullName || 'SmartCare User'}!</Text>
+      <View style={styles.headerRow}>
+        <Text style={styles.welcome}>
+          👋 Welcome, {fullName || 'SmartCare User'}!
+        </Text>
+        <TouchableOpacity onPress={handleLogout}>
+          <AntDesign name="logout" size={24} color="red" />
+        </TouchableOpacity>
+      </View>
 
       <Card title="Upcoming Appointments">
         {appointments.length === 0 ? (
@@ -113,6 +121,21 @@ export default function Dashboard() {
 
       <View style={styles.row}>
         <Tile
+          icon="person"
+          color="#ffc107"
+          text="Profile"
+          onPress={() => navigation.navigate('UserProfile')}
+        />
+        <Tile
+          icon="health-and-safety"
+          color="#dc3545"
+          text="Health History"
+          onPress={() => navigation.navigate('HealthHistory')}
+        />
+      </View>
+
+      <View style={styles.row}>
+        <Tile
           icon="medical-services"
           color="#007bff"
           text="Book Appointment"
@@ -125,21 +148,6 @@ export default function Dashboard() {
           onPress={() => navigation.navigate('ViewPrescriptions')}
         />
       </View>
-
-      <View style={styles.row}>
-        <Tile
-          icon="health-and-safety"
-          color="#dc3545"
-          text="Health History"
-          onPress={() => navigation.navigate('HealthHistory')}
-        />
-        <Tile
-          icon="person"
-          color="#ffc107"
-          text="Profile"
-          onPress={() => navigation.navigate('UserProfile')}
-        />
-      </View>
     </ScrollView>
   );
 }
@@ -148,13 +156,12 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: '#f7f9fc',
     padding: 20,
-    marginTop: 30,
+    marginTop: 40,
     flex: 1,
   },
   welcome: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 20,
     color: '#333',
   },
   row: {
@@ -173,7 +180,6 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 3,
   },
-  
   appointmentContent: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -192,4 +198,15 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     color: '#777',
   },
+  logoutText: {
+    color: 'red',
+    fontWeight: 'bold',
+    fontSize: 15,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },  
 });
