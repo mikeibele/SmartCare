@@ -11,11 +11,21 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { AntDesign } from '@expo/vector-icons';
 import { supabase } from '../../utils/supabaseClient';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function AppointmentList() {
     const [appointments, setAppointments] = useState([]);
     const [loading, setLoading] = useState(true);
     const navigation = useNavigation();
+
+
+    const handleVideoCall = (item, platform = 'jitsi') => {
+        const roomId = `SmartCareRoom_${item.id}`; // Customize if needed
+        navigation.navigate('VideoCallScreen', {
+            type: platform, // 'jitsi', 'daily', or 'zoom'
+            roomId,
+        });
+    };      
 
     useEffect(() => {
         const fetchAppointments = async () => {
@@ -70,9 +80,33 @@ export default function AppointmentList() {
                         <Text style={styles.apptSymptoms}>Symptoms: {item.symptoms}</Text>
                     )}
                 </View>
+    
+                {/* Show video icon if appointment is active and virtual */}
+                {item.status === 'active' && item.appointment_type === 'online' && (
+                    <TouchableOpacity style={{ marginLeft: 10 }} onPress={() => handleVideoCall(item, 'jitsi')}>
+                        <Ionicons name="videocam" size={28} color="#007AFF" />
+                    </TouchableOpacity>
+                )}
             </View>
         </TouchableOpacity>
     );
+    
+
+    // const renderItem = ({ item }) => (
+    //     <TouchableOpacity style={styles.appointmentCard}>
+    //         <View style={styles.cardContent}>
+    //             <View style={{ flex: 1 }}>
+    //                 <Text style={styles.apptDate}>
+    //                     {new Date(item.appointment_date).toLocaleString()}
+    //                 </Text>
+    //                 <Text style={styles.apptStatus}>Status: {item.status}</Text>
+    //                 {item.symptoms && (
+    //                     <Text style={styles.apptSymptoms}>Symptoms: {item.symptoms}</Text>
+    //                 )}
+    //             </View>
+    //         </View>
+    //     </TouchableOpacity>
+    // );
 
     return (
         <View style={styles.container}>

@@ -12,7 +12,9 @@ import UserProfile from '../app/profile/UserProfile';
 import MyId from '../app/profile/MyId';
 import HealthDetails from '../app/profile/HealthDetails';
 import AppointmentList from '../app/appointments/AppointmentList';
-
+import VideoCallScreen from '../app/screen/VideoCallScreen';
+import HealthHistoryScreen from '../app/screen/HealthHistoryScreen';
+import Recommendations from '../app//screen/Recommendations';
 
 const Stack = createNativeStackNavigator();
 
@@ -38,6 +40,9 @@ export default function MainNavigator() {
             <Stack.Screen name="HealthDetails" component={HealthDetails} />
             <Stack.Screen name="MyId" component={MyId} />
             <Stack.Screen name="AppointmentList" component={AppointmentList} />
+            <Stack.Screen name="VideoCallScreen" component={VideoCallScreen} />
+            <Stack.Screen name="HealthHistory" component={HealthHistoryScreen} />
+            <Stack.Screen name="Recommendations" component={Recommendations} />
           </>
         ) : (
           <>

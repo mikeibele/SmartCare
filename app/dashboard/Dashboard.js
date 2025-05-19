@@ -138,15 +138,23 @@ export default function Dashboard() {
         <Tile
           icon="medical-services"
           color="#007bff"
-          text="Book Appointment"
+          text="Appointment"
           onPress={() => navigation.navigate('BookAppointment')}
         />
         <Tile
           icon="description"
           color="#28a745"
-          text="View Prescriptions"
+          text="Prescriptions"
           onPress={() => navigation.navigate('ViewPrescriptions')}
         />
+
+        <Tile
+          icon="lightbulb"
+          color="#f4c20d"
+          text="Recommendations"
+          onPress={() => navigation.navigate('Recommendations')}
+        />
+
       </View>
     </ScrollView>
   );
