@@ -56,6 +56,10 @@ export default function SignupScreen({ navigation }) {
           emergency_contact: emergencyContact,
           health_history: healthHistory,
           blood_type: '',
+          age: '',
+          weight: '',
+          height: '',
+          allergies: '',
           created_at: new Date().toISOString(),
         },
       ]);
