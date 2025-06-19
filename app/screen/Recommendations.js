@@ -110,9 +110,12 @@ const Recommendations = () => {
         }
     };
 
+
+
     const renderMessage = ({ item }) => {
+        const isUser = item.user;
         const parseBoldText = (text) => {
-            const parts = text.split(/(\*\*[^*]+\*\*)/g); // Split around **bold**
+            const parts = text.split(/(\*\*[^*]+\*\*)/g);
             return parts.map((part, index) => {
                 if (part.startsWith("**") && part.endsWith("**")) {
                     return (
@@ -129,16 +132,17 @@ const Recommendations = () => {
             <View
                 style={[
                     styles.messageWrapper,
-                    item.user ? styles.userWrapper : styles.aiWrapper,
+                    isUser ? styles.userWrapper : styles.aiWrapper,
                 ]}
             >
-                <View style={[styles.messageBubble, item.user ? styles.userBubble : styles.aiBubble]}>
-                    <Text style={styles.messageText}>{parseBoldText(item.text)}</Text>
+                <View style={[styles.messageBubble, isUser ? styles.userBubble : styles.aiBubble]}>
+                    <Text style={[styles.messageText, !isUser && styles.aiText]}>
+                        {parseBoldText(item.text)}
+                    </Text>
                 </View>
             </View>
         );
     };
-    
 
     return (
         <View style={styles.container}>
@@ -153,10 +157,12 @@ const Recommendations = () => {
 
 
             <FlatList
-                data={messages}
+                // data={messages}
+                data={[...messages].reverse()} // reverse to mimic Telegram style
                 renderItem={renderMessage}
                 keyExtractor={(_, index) => index.toString()}
                 contentContainerStyle={{ paddingBottom: 10 }}
+                inverted
             />
 
             <TouchableOpacity style={styles.tipsButton} onPress={sendPersonalizedTip}>
@@ -173,7 +179,7 @@ const Recommendations = () => {
                     style={styles.input}
                 />
                 <TouchableOpacity style={styles.sendIcon} onPress={sendMessage}>
-                    <FontAwesome name="send" size={20} color="white" />
+                    <FontAwesome name="send" size={20} color="#06191D" />
                 </TouchableOpacity>
             </View>
         </View>
@@ -183,81 +189,17 @@ const Recommendations = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#e5ddd5",
+        backgroundColor: "#f5f5f5",
         paddingTop: 50,
     },
-    messageWrapper: {
-        paddingHorizontal: 10,
-        marginVertical: 4,
-        flexDirection: "row",
-    },
-    userWrapper: {
-        justifyContent: "flex-end",
-    },
-    aiWrapper: {
-        justifyContent: "flex-start",
-    },
-    messageBubble: {
-        maxWidth: "75%",
-        padding: 10,
-        borderRadius: 15,
-    },
-    userBubble: {
-        backgroundColor: "#dcf8c6",
-        borderTopLeftRadius: 0,
-    },
-    aiBubble: {
-        backgroundColor: "#ffffff",
-        borderTopRightRadius: 0,
-    },
-    messageText: {
-        fontSize: 16,
-        color: "#000",
-    },
-    inputContainer: {
-        flexDirection: "row",
-        alignItems: "center",
-        padding: 10,
-        backgroundColor: "#f0f0f0",
-    },
-    input: {
-        flex: 1,
-        padding: 10,
-        backgroundColor: "#fff",
-        borderRadius: 25,
-        height: 50,
-        color: "#000",
-    },
-    sendIcon: {
-        padding: 10,
-        backgroundColor: "#075e54",
-        borderRadius: 25,
-        height: 50,
-        width: 50,
-        justifyContent: "center",
-        alignItems: "center",
-        marginLeft: 8,
-    },
-    tipsButton: {
-        backgroundColor: "#128c7e",
-        marginHorizontal: 20,
-        marginBottom: 8,
-        paddingVertical: 12,
-        borderRadius: 25,
-        alignItems: "center",
-    },
-    tipsButtonText: {
-        color: "white",
-        fontSize: 16,
-        fontWeight: "bold",
-    },
-
-
     header: {
         flexDirection: "row",
         alignItems: "center",
-        paddingHorizontal: 10,
-        marginBottom: 10,
+        paddingHorizontal: 15,
+        paddingBottom: 10,
+        backgroundColor: "#ffffff",
+        borderBottomWidth: 1,
+        borderBottomColor: "#e0e0e0",
     },
     backButton: {
         marginRight: 10,
@@ -267,7 +209,82 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         color: "#000",
     },
-    
+    messageWrapper: {
+        flexDirection: "row",
+        paddingHorizontal: 10,
+        marginVertical: 6,
+    },
+    userWrapper: {
+        justifyContent: "flex-end",
+    },
+    aiWrapper: {
+        justifyContent: "flex-start",
+    },
+    messageBubble: {
+        padding: 12,
+        borderRadius: 20,
+        maxWidth: "80%",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 1.5,
+        elevation: 2,
+    },
+    userBubble: {
+        backgroundColor: "#00ffcc",
+        borderTopLeftRadius: 5,
+        marginLeft: "auto",
+    },
+    aiBubble: {
+        backgroundColor: "#e8e8e8",
+        borderTopRightRadius: 5,
+        marginRight: "auto",
+    },
+    messageText: {
+        fontSize: 16,
+        color: "#06191D",
+    },
+    aiText: {
+        color: "#000",
+    },
+    inputContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+        padding: 8,
+        borderTopWidth: 1,
+        borderTopColor: "#ccc",
+        backgroundColor: "#fff",
+    },
+    input: {
+        flex: 1,
+        paddingHorizontal: 15,
+        paddingVertical: 10,
+        backgroundColor: "#f1f1f1",
+        borderRadius: 25,
+        fontSize: 16,
+        color: "#000",
+    },
+    sendIcon: {
+        backgroundColor: "#00ffcc",
+        padding: 12,
+        marginLeft: 10,
+        borderRadius: 25,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    tipsButton: {
+        backgroundColor: "#06191D",
+        marginHorizontal: 20,
+        marginVertical: 8,
+        paddingVertical: 12,
+        borderRadius: 25,
+        alignItems: "center",
+    },
+    tipsButtonText: {
+        color: "white",
+        fontSize: 16,
+        fontWeight: "600",
+    },
 });
 
 export default Recommendations;

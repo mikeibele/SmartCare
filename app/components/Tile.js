@@ -23,7 +23,7 @@ const styles = StyleSheet.create({
   },
   tileText: {
     marginTop: 10,
-    color: '#333',
+    color: '#06191D',
     fontWeight: '500',
   },
 });

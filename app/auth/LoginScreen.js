@@ -41,28 +41,28 @@ export default function LoginScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: '#06191D' }}
+      style={{ flex: 1, backgroundColor: '#0165FC'  }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={{ flex: 1 }}>
           <SafeAreaView>
-            {/* <View style={{ padding: 16 }}>
-              <TouchableOpacity
-                onPress={() => navigation.goBack()}
-                style={{
-                  backgroundColor: '#00ffcc',
-                  padding: 10,
-                  borderRadius: 20,
-                  width: 40,
-                  height: 40,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-              >
-                <ArrowLeftIcon size={20} color="black" />
-              </TouchableOpacity>
-            </View> */}
+
+            <TouchableOpacity
+              onPress={() => navigation.goBack()}
+              style={{
+                backgroundColor: '#06191D',
+                padding: 10,
+                borderRadius: 20,
+                width: 40,
+                height: 40,
+                justifyContent: 'center',
+                alignItems: 'center',
+                marginLeft: 10,
+              }}
+            >
+              <ArrowLeftIcon size={20} color="white" />
+            </TouchableOpacity>
 
             <View style={{ alignItems: 'center', marginVertical: 20 }}>
               <Image
@@ -138,7 +138,7 @@ export default function LoginScreen() {
 
             <TouchableOpacity
               style={{
-                backgroundColor: '#00ffcc',
+                backgroundColor: '#0165FC',
                 paddingVertical: 15,
                 borderRadius: 30,
                 alignItems: 'center',
@@ -149,7 +149,7 @@ export default function LoginScreen() {
               {isLoading ? (
                 <ActivityIndicator color="#FFFFFF" />
               ) : (
-                <Text style={{ color: '#06191D', fontSize: 20, fontWeight: 'bold' }}>
+                <Text style={{ color: '#FFFF', fontSize: 20, fontWeight: 'bold' }}>
                   Log In
                 </Text>
               )}

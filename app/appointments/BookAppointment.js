@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Alert,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { supabase } from '../../utils/supabaseClient';
@@ -20,40 +21,50 @@ export default function BookAppointment() {
   const [date, setDate] = useState(new Date());
   const [showPicker, setShowPicker] = useState(false);
   const [appointmentType, setAppointmentType] = useState('online'); // 👈 default selection
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
-    const { data: user } = await supabase.auth.getUser();
-
     if (!symptoms) {
       Alert.alert('Please enter your symptoms');
       return;
     }
-
-    const { error } = await supabase.from('appointments').insert([
-      {
-        user_id: user.user.id,
-        appointment_date: date.toISOString(),
-        symptoms,
-        appointment_type: appointmentType,
-      },
-    ]);
-
-    if (error) {
-      console.log('Error booking appointment:', error);
-      Alert.alert('Failed to book appointment');
-    } else {
-      Alert.alert('Appointment booked!');
-      navigation.goBack();
+  
+    setLoading(true);
+  
+    try {
+      const { data: user } = await supabase.auth.getUser();
+  
+      const { error } = await supabase.from('appointments').insert([
+        {
+          user_id: user.user.id,
+          appointment_date: date.toISOString(),
+          symptoms,
+          appointment_type: appointmentType,
+        },
+      ]);
+  
+      if (error) {
+        console.log('Error booking appointment:', error);
+        Alert.alert('Failed to book appointment');
+      } else {
+        Alert.alert('Appointment booked!');
+        navigation.goBack();
+      }
+    } catch (err) {
+      console.log(err);
+      Alert.alert('An unexpected error occurred');
+    } finally {
+      setLoading(false);
     }
   };
-
+  
   return (
     <View style={styles.container}>
       <View style={styles.titleRow}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color="#007bff" />
         </TouchableOpacity>
-        <Text style={styles.title}>📅 Book an Appointment</Text>
+        <Text style={styles.title}> Book an Appointment</Text>
       </View>
 
       <Text style={styles.label}>Select Date:</Text>
@@ -119,8 +130,12 @@ export default function BookAppointment() {
         multiline
       />
 
-      <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-        <Text style={styles.buttonText}>Confirm Appointment</Text>
+      <TouchableOpacity style={styles.button} onPress={handleSubmit} disabled={loading}>
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.buttonText}>Confirm Appointment</Text>
+        )}
       </TouchableOpacity>
     </View>
   );

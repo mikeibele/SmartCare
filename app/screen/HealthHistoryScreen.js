@@ -1,57 +1,67 @@
-// screen/HealthHistoryScreen.js
+// app/screen/HealthHistoryScreen.js
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, ActivityIndicator, StyleSheet, TouchableOpacity, Linking } from 'react-native';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import useAuth from '../../hooks/useAuth'; // or your auth context/provider
+
 import { supabase } from '../../utils/supabaseClient';
 
-export default function HealthHistoryScreen() {
-    const [history, setHistory] = useState([]);
-    const [loading, setLoading] = useState(true);
+const HealthHistoryScreen = () => {
+    const [patient, setPatient] = useState(null);
+    const { session, loading } = useAuth();
+
 
     useEffect(() => {
-        fetchHistory();
-    }, []);
+        if (loading || !session?.user?.id) return; // ⛔️ Prevent fetch if not ready
+    
+        const fetchHealthData = async () => {
+            const { data, error } = await supabase
+                .from('patients')
+                .select('*')
+                .eq('user_id', session.user.id)
+                .single();
+    
+            if (error) {
+                console.error('Error fetching health history:', error.message);
+            } else {
+                setPatient(data);
+            }
+        };
+    
+        fetchHealthData();
+    }, [loading, session]); // ✅ Re-run when session becomes available
+    
 
-    const fetchHistory = async () => {
-        const { data, error } = await supabase
-            .from('health_history')
-            .select('*, doctors(full_name)')
-            .order('created_at', { ascending: false });
-
-        if (error) console.error(error);
-        else setHistory(data);
-
-        setLoading(false);
-    };
-
-    const renderItem = ({ item }) => (
-        <View style={styles.card}>
-            <Text style={styles.diagnosis}>🩺 {item.diagnosis}</Text>
-            <Text>Doctor: {item.doctors?.full_name || 'N/A'}</Text>
-            <Text>{item.notes}</Text>
-            {item.attachment_url && (
-                <TouchableOpacity onPress={() => Linking.openURL(item.attachment_url)}>
-                    <Text style={styles.link}>View Attachment</Text>
-                </TouchableOpacity>
-            )}
-            <Text style={styles.date}>{new Date(item.created_at).toLocaleString()}</Text>
-        </View>
-    );
-
-    if (loading) return <ActivityIndicator style={{ marginTop: 50 }} size="large" color="#007AFF" />;
+    if (loading || !patient) return <Text>Loading...</Text>;
 
     return (
-        <FlatList
-            contentContainerStyle={{ padding: 20 }}
-            data={history}
-            keyExtractor={(item) => item.id}
-            renderItem={renderItem}
-        />
+        <ScrollView contentContainerStyle={styles.container}>
+            <Text style={styles.title}>Health History</Text>
+            <Text style={styles.label}>Allergies:</Text>
+            <Text style={styles.value}>{patient.allergies || 'None'}</Text>
+
+            <Text style={styles.label}>Past Issues:</Text>
+            <Text style={styles.value}>{patient.health_history || 'None'}</Text>
+
+            <Text style={styles.label}>Blood Type:</Text>
+            <Text style={styles.value}>{patient.blood_type}</Text>
+
+            <Text style={styles.label}>Height:</Text>
+            <Text style={styles.value}>{patient.height} cm</Text>
+
+            <Text style={styles.label}>Weight:</Text>
+            <Text style={styles.value}>{patient.weight} kg</Text>
+
+            <Text style={styles.label}>Emergency Contact:</Text>
+            <Text style={styles.value}>{patient.emergency_contact}</Text>
+        </ScrollView>
     );
-}
+};
 
 const styles = StyleSheet.create({
-    card: { backgroundColor: '#fff', padding: 15, borderRadius: 8, marginBottom: 15 },
-    diagnosis: { fontSize: 18, fontWeight: 'bold' },
-    link: { color: 'blue', marginTop: 5 },
-    date: { marginTop: 10, fontSize: 12, color: '#555' },
+    container: { padding: 20 },
+    title: { fontSize: 22, fontWeight: 'bold', marginBottom: 20 },
+    label: { fontWeight: 'bold', marginTop: 10 },
+    value: { marginBottom: 10 },
 });
+
+export default HealthHistoryScreen;

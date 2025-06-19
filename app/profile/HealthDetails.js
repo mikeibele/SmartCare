@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, ScrollView, Image } from 'react-native';
 import { supabase } from '../../utils/supabaseClient';
 import { useNavigation } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
 import { TouchableOpacity } from 'react-native-gesture-handler';
+import { AntDesign, MaterialCommunityIcons } from '@expo/vector-icons';
 
 const HealthDetails = () => {
     const navigation = useNavigation();
@@ -44,35 +44,67 @@ const HealthDetails = () => {
 
     return (
         <ScrollView style={styles.container}>
-            {/* 🔙 Back Button */}
-            <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-                <Ionicons name="arrow-back" size={24} color="#fff" />
-            </TouchableOpacity>
+            <View style={styles.headerImage}>
+                <View style={styles.headerContainer}>
+                    <TouchableOpacity onPress={() => navigation.goBack()}>
+                        <AntDesign name="arrowleft" size={24} color="#06191D" />
+                    </TouchableOpacity>
+                </View>
 
-            <Text style={styles.title}>Health Details</Text>
+                <View style={styles.profileSection}>
+                    <Image
+                        source={require('../../assets/images/UserProfile.png')}
+                        style={styles.profilePic}
+                    />
+                    <Text style={styles.userName}>{userData?.full_name || 'Full Name'}</Text>
+                    <Text style={styles.locationText}>{userData?.address || 'N/A'}</Text>
+                </View>
+            </View>
+
+            <View style={styles.metricsRow}>
+                <View style={styles.metricBox}>
+                    <MaterialCommunityIcons name="gender-male-female" size={24} color="#06191D" />
+                    <Text style={styles.metricValue}>{userData?.gender || 'N/A'}</Text>
+                    <Text style={styles.metricLabel}>Gender</Text>
+                </View>
+                <View style={styles.metricBox}>
+                    <MaterialCommunityIcons name="weight-kilogram" size={24} color="#06191D" />
+                    <Text style={styles.metricValue}>{userData?.weight || 'N/A'} kg</Text>
+                    <Text style={styles.metricLabel}>Weight</Text>
+                </View>
+                <View style={styles.metricBox}>
+                    <MaterialCommunityIcons name="human-male-height" size={24} color="#06191D" />
+                    <Text style={styles.metricValue}>{userData?.height || 'N/A'} ft</Text>
+                    <Text style={styles.metricLabel}>Height</Text>
+                </View>
+            </View>
+
+            <View style={styles.metricsRow}>
+                <View style={styles.metricBox}>
+                    <MaterialCommunityIcons name="water" size={24} color="#06191D" />
+                    <Text style={styles.metricValue}>{userData?.blood_type || 'N/A'}</Text>
+                    <Text style={styles.metricLabel}>Blood Type</Text>
+                </View>
+                <View style={styles.metricBox}>
+                    <MaterialCommunityIcons name="phone" size={24} color="#06191D" />
+                    <Text style={styles.metricValue}>{userData?.emergency_contact || 'N/A'}</Text>
+                    <Text style={styles.metricLabel}>Emergency</Text>
+                </View>
+                <View style={styles.metricBox}>
+                    <MaterialCommunityIcons name="alert-circle" size={24} color="#06191D" />
+                    <Text style={styles.metricValue}>
+                        {userData?.allergies ? (userData.allergies.length > 10 ? userData.allergies.slice(0, 10) + '...' : userData.allergies) : 'None'}
+                    </Text>
+                    <Text style={styles.metricLabel}>Allergies</Text>
+                </View>
+            </View>
+
 
             {loading ? (
                 <ActivityIndicator size="large" color="#2e90fa" />
-            ) : userData ? (
-                <View style={styles.card}>
-                    <Text style={styles.label}>Full Name:</Text>
-                    <Text style={styles.value}>{userData.full_name}</Text>
-
-                    <Text style={styles.label}>Email:</Text>
-                    <Text style={styles.value}>{userData.email || 'N/A'}</Text>
-
-                    <Text style={styles.label}>Gender:</Text>
-                    <Text style={styles.value}>{userData.gender || 'N/A'}</Text>
-
-                    <Text style={styles.label}>Date of Birth:</Text>
-                    <Text style={styles.value}>{userData.dob || 'N/A'}</Text>
-
-                    <Text style={styles.label}>Blood Type:</Text>
-                    <Text style={styles.value}>{userData.blood_type || 'N/A'}</Text>
-                </View>
-            ) : (
+            ) : !userData ? (
                 <Text style={styles.empty}>No health details found.</Text>
-            )}
+            ) : null}
         </ScrollView>
     );
 };
@@ -80,44 +112,88 @@ const HealthDetails = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 24,
-        backgroundColor: '#121212',
+        backgroundColor: '#f7f9fc',
     },
     backButton: {
         position: 'absolute',
         top: 40,
         left: 20,
-        zIndex: 1,
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#fff',
-        marginTop: 50,
-        marginBottom: 20,
-        textAlign: 'center',
-    },
-    card: {
+        zIndex: 100, // ensure it's above everything
         backgroundColor: '#1e1e1e',
-        borderRadius: 12,
-        padding: 20,
-        marginTop: 10,
+        padding: 8,
+        borderRadius: 20,
+        marginBottom: 50
     },
-    label: {
-        fontSize: 16,
-        color: '#bbb',
-        marginTop: 10,
+    headerImage: {
+        backgroundColor: '#fff',
+        paddingTop: 60,
+        paddingBottom: 30,
+        borderBottomLeftRadius: 30,
+        borderBottomRightRadius: 30,
+        // alignItems: 'center',
+        justifyContent: 'center',
     },
-    value: {
+    profileSection: {
+        alignItems: 'center',
+    },
+    profilePic: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        borderWidth: 2,
+        borderColor: '#fff',
+    },
+    userName: {
+        marginTop: 10,
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#1e1e1e',
+    },
+    locationText: {
+        color: '#777',
+        marginTop: 4,
+        fontSize: 14,
+    },
+    metricsRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        marginTop: 20,
+        marginHorizontal: 10,
+    },
+    metricBox: {
+        backgroundColor: '#fff',
+        padding: 16,
+        borderRadius: 16,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+        width: '30%',
+    },
+    metricValue: {
         fontSize: 18,
-        color: '#fff',
-        fontWeight: '500',
+        fontWeight: 'bold',
+        color: '#1e1e1e',
+    },
+    metricLabel: {
+        fontSize: 12,
+        color: '#888',
+        marginTop: 4,
     },
     empty: {
         color: '#aaa',
         fontSize: 16,
         textAlign: 'center',
         marginTop: 30,
+    },
+    headerContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 16,
+        gap: 10,
+        paddingLeft: 10,
     },
 });
 
