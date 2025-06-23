@@ -14,6 +14,7 @@ import AppointmentList from '../app/appointments/AppointmentList';
 import HealthHistoryScreen from '../app/screen/HealthHistoryScreen';
 import Recommendations from '../app/screen/Recommendations';
 import WelcomeScreen from '../app/screen/WelcomeScreen';
+import PrescriptionDetails from '../app/screen/PrescriptionDetails';
 
 
 const Stack = createNativeStackNavigator();
@@ -41,6 +42,7 @@ export default function MainNavigator() {
             <Stack.Screen name="HealthHistoryScreen" component={HealthHistoryScreen} />
             <Stack.Screen name="Recommendations" component={Recommendations} />
             <Stack.Screen name="Prescriptions" component={Prescriptions} />
+            <Stack.Screen name="PrescriptionDetails" component={PrescriptionDetails} />
           </>
         ) : (
           <>

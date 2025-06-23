@@ -136,7 +136,6 @@ export default function AppointmentList() {
             );
         };
         
-
         return (
             <View style={styles.card}>
                 <Text style={styles.dateText}>
@@ -184,18 +183,6 @@ export default function AppointmentList() {
                         </TouchableOpacity>
                     )}
                 </View>
-
-
-                {/* <View style={styles.buttonRow}>
-                    {item.status !== 'cancelled' && (
-                        <TouchableOpacity
-                            style={styles.cancelBtn}
-                            onPress={() => handleCancelAppointment(item.id)}
-                        >
-                            <Text style={styles.cancelText}>Cancel </Text>
-                        </TouchableOpacity>
-                    )}                    
-                </View>          */}
             </View>
         );
     };

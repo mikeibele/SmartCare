@@ -40,7 +40,22 @@ const Recommendations = () => {
 
                 if (patientError || !patient) throw patientError || new Error("Patient not found");
 
-                const context = `Patient Info: Name: ${patient.full_name}, Age: ${patient.age}, Gender: ${patient.gender}, Weight: ${patient.weight}, Height: ${patient.height}, Known Conditions: ${patient.health_history || "None"}, Allergies: ${patient.allergies || "None"}`;
+                // Calculate age from DOB
+                const calculateAge = (dob) => {
+                    const birthDate = new Date(dob);
+                    const today = new Date();
+                    let age = today.getFullYear() - birthDate.getFullYear();
+                    const m = today.getMonth() - birthDate.getMonth();
+                    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+                        age--;
+                    }
+                    return age;
+                };
+
+                const age = patient.dob ? calculateAge(patient.dob) : patient.age || "Unknown";
+
+                const context = `Patient Info: Name: ${patient.full_name}, Age: ${age}, Gender: ${patient.gender}, Weight: ${patient.weight}, Height: ${patient.height}, Known Conditions: ${patient.health_history || "None"}, Allergies: ${patient.allergies || "None"}`;
+
                 setPatientContext(context);
                 setFullName(patient.full_name);
 
@@ -64,20 +79,16 @@ const Recommendations = () => {
 
     const sendMessage = async () => {
         if (!userInput.trim()) return;
-
         const userMessage = { text: userInput, user: true };
         setMessages((prev) => [...prev, userMessage]);
         setUserInput("");
-
         try {
             const genAI = new GoogleGenerativeAI.GoogleGenerativeAI(API_KEY);
             const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-001" });
-
             const fullPrompt = `${patientContext}\n\nUser Question: ${userMessage.text}`;
             const result = await model.generateContent(fullPrompt);
             const response = result.response;
             const botReply = response.text();
-
             setMessages((prev) => [...prev, { text: botReply, user: false }]);
         } catch (error) {
             console.error("Gemini error:", error.message);
@@ -109,8 +120,6 @@ const Recommendations = () => {
             });
         }
     };
-
-
 
     const renderMessage = ({ item }) => {
         const isUser = item.user;
@@ -147,14 +156,12 @@ const Recommendations = () => {
     return (
         <View style={styles.container}>
             {/* <FlashMessage position="top" /> */}
-
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                     <Ionicons name="arrow-back" size={24} color="#000" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Recommendations</Text>
+                <Text style={styles.headerTitle}>A.I Assistant</Text>
             </View>
-
 
             <FlatList
                 // data={messages}
@@ -179,7 +186,7 @@ const Recommendations = () => {
                     style={styles.input}
                 />
                 <TouchableOpacity style={styles.sendIcon} onPress={sendMessage}>
-                    <FontAwesome name="send" size={20} color="#06191D" />
+                    <FontAwesome name="send" size={20} color="#fff" />
                 </TouchableOpacity>
             </View>
         </View>
@@ -189,7 +196,7 @@ const Recommendations = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#f5f5f5",
+        backgroundColor: "#fff",
         paddingTop: 50,
     },
     header: {
@@ -231,7 +238,7 @@ const styles = StyleSheet.create({
         elevation: 2,
     },
     userBubble: {
-        backgroundColor: "#00ffcc",
+        backgroundColor: "#0165FC",
         borderTopLeftRadius: 5,
         marginLeft: "auto",
     },
@@ -242,7 +249,7 @@ const styles = StyleSheet.create({
     },
     messageText: {
         fontSize: 16,
-        color: "#06191D",
+        color: "#fff",
     },
     aiText: {
         color: "#000",
@@ -265,7 +272,7 @@ const styles = StyleSheet.create({
         color: "#000",
     },
     sendIcon: {
-        backgroundColor: "#00ffcc",
+        backgroundColor: "#0165FC",
         padding: 12,
         marginLeft: 10,
         borderRadius: 25,
