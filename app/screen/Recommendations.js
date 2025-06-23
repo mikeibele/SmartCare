@@ -7,6 +7,7 @@ import {
     FlatList,
     StyleSheet,
     TouchableOpacity,
+    ActivityIndicator,
 } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import FlashMessage, { showMessage } from "react-native-flash-message";
@@ -21,6 +22,9 @@ const Recommendations = () => {
     const [patientContext, setPatientContext] = useState("");
     const [fullName, setFullName] = useState("");
     const navigation = useNavigation();
+
+    const [isSending, setIsSending] = useState(false);
+    const [isGeneratingTips, setIsGeneratingTips] = useState(false);
 
     const API_KEY = "AIzaSyDsJeBfkK8WzF1yzGMcTEAbuyrvV-ioHnw";
 
@@ -79,17 +83,39 @@ const Recommendations = () => {
 
     const sendMessage = async () => {
         if (!userInput.trim()) return;
+        setIsSending(true);
+
         const userMessage = { text: userInput, user: true };
         setMessages((prev) => [...prev, userMessage]);
         setUserInput("");
+
         try {
             const genAI = new GoogleGenerativeAI.GoogleGenerativeAI(API_KEY);
-            const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-001" });
+            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
             const fullPrompt = `${patientContext}\n\nUser Question: ${userMessage.text}`;
             const result = await model.generateContent(fullPrompt);
             const response = result.response;
-            const botReply = response.text();
-            setMessages((prev) => [...prev, { text: botReply, user: false }]);
+            const fullText = response.text();
+
+            let index = 0;
+            let currentText = "";
+            const botMessage = { text: "", user: false };
+            setMessages((prev) => [...prev, botMessage]);
+
+            const interval = setInterval(() => {
+                if (index < fullText.length) {
+                    currentText += fullText[index++];
+                    setMessages((prev) => {
+                        const updated = [...prev];
+                        updated[updated.length - 1] = { ...botMessage, text: currentText };
+                        return updated;
+                    });
+                } else {
+                    clearInterval(interval);
+                    setIsSending(false);
+                }
+            }, 20);
         } catch (error) {
             console.error("Gemini error:", error.message);
             showMessage({
@@ -97,20 +123,39 @@ const Recommendations = () => {
                 description: "Failed to get AI response.",
                 type: "danger",
             });
+            setIsSending(false);
         }
     };
 
     const sendPersonalizedTip = async () => {
+        setIsGeneratingTips(true);
         try {
             const genAI = new GoogleGenerativeAI.GoogleGenerativeAI(API_KEY);
-            const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-001" });
+            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
             const prompt = `${patientContext}\n\nGive personalized health tips for ${fullName}.`;
             const result = await model.generateContent(prompt);
             const response = result.response;
-            const tips = response.text();
+            const fullText = response.text();
 
-            setMessages((prev) => [...prev, { text: tips, user: false }]);
+            let index = 0;
+            let currentText = "";
+            const botMessage = { text: "", user: false };
+            setMessages((prev) => [...prev, botMessage]);
+
+            const interval = setInterval(() => {
+                if (index < fullText.length) {
+                    currentText += fullText[index++];
+                    setMessages((prev) => {
+                        const updated = [...prev];
+                        updated[updated.length - 1] = { ...botMessage, text: currentText };
+                        return updated;
+                    });
+                } else {
+                    clearInterval(interval);
+                    setIsGeneratingTips(false);
+                }
+            }, 20);
         } catch (error) {
             console.error("Gemini error:", error.message);
             showMessage({
@@ -118,9 +163,10 @@ const Recommendations = () => {
                 description: "Failed to generate personalized tips.",
                 type: "danger",
             });
+            setIsGeneratingTips(false);
         }
     };
-
+     
     const renderMessage = ({ item }) => {
         const isUser = item.user;
         const parseBoldText = (text) => {
@@ -172,9 +218,14 @@ const Recommendations = () => {
                 inverted
             />
 
-            <TouchableOpacity style={styles.tipsButton} onPress={sendPersonalizedTip}>
-                <Text style={styles.tipsButtonText}>🎯 Get Personalized Tips</Text>
+            <TouchableOpacity style={styles.tipsButton} onPress={sendPersonalizedTip} disabled={isGeneratingTips}>
+                {isGeneratingTips ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                    <Text style={styles.tipsButtonText}>🎯 Get Personalized Tips</Text>
+                )}
             </TouchableOpacity>
+
 
             <View style={styles.inputContainer}>
                 <TextInput
@@ -184,10 +235,16 @@ const Recommendations = () => {
                     value={userInput}
                     onSubmitEditing={sendMessage}
                     style={styles.input}
-                />
-                <TouchableOpacity style={styles.sendIcon} onPress={sendMessage}>
-                    <FontAwesome name="send" size={20} color="#fff" />
+                />                
+
+                <TouchableOpacity style={styles.sendIcon} onPress={sendMessage} disabled={isSending}>
+                    {isSending ? (
+                        <ActivityIndicator size="small" color="#fff" />
+                    ) : (
+                        <FontAwesome name="send" size={20} color="#fff" />
+                    )}
                 </TouchableOpacity>
+
             </View>
         </View>
     );
