@@ -13,15 +13,14 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bitcode": false,
-      "bundleIdentifier": "com.king-ibele.smartcare"
+      "bitcode": false
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.king_ibele.smartcare"
+      "package": "com.ibele_canada.smartcare"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -35,7 +34,7 @@
         "origin": false
       },
       "eas": {
-        "projectId": "973f45fc-b639-4e50-8827-9a315c8f557a"
+        "projectId": "9d7c122a-89b6-4d84-8198-5431fd9b6d9a"
       }
     }
   }
